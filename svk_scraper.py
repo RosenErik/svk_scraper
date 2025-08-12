@@ -9,6 +9,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 import time
 import pandas as pd
 from datetime import datetime
@@ -45,32 +46,24 @@ class SVKPowerScraper:
             self.driver.quit()
             
     def initialize_driver(self):
+        """Initialize the Chrome driver using webdriver-manager."""
         options = Options()
         if self.headless:
-            options.add_argument('--headless')
+            options.add_argument("--headless")
         
-        options.add_argument('--no-sandbox')
-        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
         
-        # Try different driver options
-        driver = None
-        
-        # Try Chrome first
         try:
-            driver = webdriver.Chrome(options=options)
-        except:
-            # Try Chromium
-            try:
-                options.binary_location = '/usr/bin/chromium-browser'
-                driver = webdriver.Chrome(
-                    executable_path='/usr/bin/chromedriver',
-                    options=options
-                )
-            except Exception as e:
-                self.logger.error(f"Could not initialize driver: {e}")
-                raise
-        
-        self.driver = driver
+            # Use webdriver-manager to handle driver installation
+            self.logger.info("Initializing driver with webdriver-manager...")
+            service = Service(ChromeDriverManager().install())
+            self.driver = webdriver.Chrome(service=service, options=options)
+            self.logger.info("✓ Chrome driver initialized successfully")
+
+        except Exception as e:
+            self.logger.error(f"Could not initialize driver using webdriver-manager: {e}", exc_info=True)
+            raise
             
         self.driver.set_page_load_timeout(30)
         self.wait = WebDriverWait(self.driver, 15)
