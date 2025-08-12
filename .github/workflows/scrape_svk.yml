@@ -38,14 +38,28 @@ jobs:
     - name: Install ChromeDriver
       run: |
         # Get Chrome version
-        CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | awk -F'.' '{print $1}')
+        CHROME_VERSION=$(google-chrome --version | awk '{print $3}')
         echo "Chrome version: $CHROME_VERSION"
         
-        # Download matching ChromeDriver
-        wget -q -O /tmp/chromedriver-linux64.zip https://storage.googleapis.com/chrome-for-testing-public/${CHROME_VERSION}.0.6613.119/linux64/chromedriver-linux64.zip
+        # Get the major version number
+        CHROME_MAJOR=$(echo $CHROME_VERSION | awk -F'.' '{print $1}')
+        echo "Chrome major version: $CHROME_MAJOR"
+        
+        # Get the latest ChromeDriver version for this Chrome version
+        # Using the Chrome for Testing availability API
+        DRIVER_VERSION=$(curl -s "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_${CHROME_MAJOR}")
+        echo "ChromeDriver version: $DRIVER_VERSION"
+        
+        # Download ChromeDriver
+        wget -q -O /tmp/chromedriver-linux64.zip "https://storage.googleapis.com/chrome-for-testing-public/${DRIVER_VERSION}/linux64/chromedriver-linux64.zip"
+        
+        # Extract and install
         unzip -q /tmp/chromedriver-linux64.zip -d /tmp/
         sudo mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/
         sudo chmod +x /usr/local/bin/chromedriver
+        
+        # Verify installation
+        chromedriver --version
         
     - name: Install Python dependencies
       run: |
