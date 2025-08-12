@@ -8,8 +8,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 import time
 import pandas as pd
 from datetime import datetime
@@ -46,7 +44,7 @@ class SVKPowerScraper:
             self.driver.quit()
             
     def initialize_driver(self):
-        """Initialize the Chrome driver using webdriver-manager."""
+        """Initialize the Chrome driver using Selenium Manager."""
         options = Options()
         if self.headless:
             options.add_argument("--headless")
@@ -55,14 +53,13 @@ class SVKPowerScraper:
         options.add_argument("--disable-dev-shm-usage")
         
         try:
-            # Use webdriver-manager to handle driver installation
-            self.logger.info("Initializing driver with webdriver-manager...")
-            service = Service(ChromeDriverManager().install())
-            self.driver = webdriver.Chrome(service=service, options=options)
+            # Let Selenium Manager handle the driver automatically
+            self.logger.info("Initializing driver with Selenium Manager...")
+            self.driver = webdriver.Chrome(options=options)
             self.logger.info("✓ Chrome driver initialized successfully")
 
         except Exception as e:
-            self.logger.error(f"Could not initialize driver using webdriver-manager: {e}", exc_info=True)
+            self.logger.error(f"Could not initialize driver: {e}", exc_info=True)
             raise
             
         self.driver.set_page_load_timeout(30)
